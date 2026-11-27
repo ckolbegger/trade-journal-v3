@@ -242,5 +242,6 @@ export type {
   SaveReviewMarksResult,
   SaveTradeActionRequest,
   SettlementItem,
+  ReviewSettlementItem,
   TradeSaveBinding,
 } from '../coordinators/daily-review/index.ts';

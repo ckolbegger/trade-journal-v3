@@ -157,8 +157,8 @@ describe('after the expiration session (P25, A110)', () => {
     expect(xyz).toEqual(expect.objectContaining({ task: 'Manual', trades: expect.arrayContaining([t1, t2]) as unknown }));
     expect(xyz?.trades).toHaveLength(2);
     expect(family(result, 'Settlement').items.map((item) => ({ ...item, instrument: instrumentKey(item.instrument) }))).toEqual([
-      { tradeId: t1, instrument: 'XYZ261120C00055000', quantity: Rational.of(1n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE },
-      { tradeId: t3, instrument: 'MNO261120P00045000', quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE },
+      { tradeId: t1, instrument: 'XYZ261120C00055000', quantity: Rational.of(1n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE, beforeCloseTime: '2026-11-20T20:59:00Z' },
+      { tradeId: t3, instrument: 'MNO261120P00045000', quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE, beforeCloseTime: '2026-11-20T20:59:00Z' },
     ]);
     const walk = family(result, 'Trades').trades;
     expect(walk).toHaveLength(5);
@@ -178,6 +178,21 @@ async function cardOf(stack: ReviewStack, asOf: string, tradeId: string) {
   return card.trade;
 }
 
+describe('the Sold before the close time of a settlement item', () => {
+  it('should give the expired contract settlement item the Sold before the close time, one minute before the settlement instant', async () => {
+    const { stack, t1, t3 } = await settlementFixture(FRIDAY_1700, true);
+
+    const result = await open(stack, FRIDAY_1700);
+    const card = await cardOf(stack, FRIDAY_1700, t3);
+
+    expect(family(result, 'Settlement').items.map(({ tradeId, beforeCloseTime }) => ({ tradeId, beforeCloseTime }))).toEqual([
+      { tradeId: t1, beforeCloseTime: '2026-11-20T20:59:00Z' },
+      { tradeId: t3, beforeCloseTime: '2026-11-20T20:59:00Z' },
+    ]);
+    expect(card.settlement.map(({ beforeCloseTime }) => beforeCloseTime)).toEqual(['2026-11-20T20:59:00Z']);
+  }, 60_000);
+});
+
 describe('settlement and payoff in the card', () => {
   it('should return T-3 card with its Settlement Due item, the Record expiration route with the settlement time, the assignment explanation, its Review-date evaluation, its Current payoff summary, and its value at expiration at MNO close, and T-4 with payoff and value at expiration and no settlement item', async () => {
     const { stack, t3, t4 } = await settlementFixture(FRIDAY_1700, true);
@@ -186,7 +201,7 @@ describe('settlement and payoff in the card', () => {
 
     // The item carries the route's settlement time and, by its negative quantity, the assignment explanation.
     expect(card.settlement.map((item) => ({ ...item, instrument: instrumentKey(item.instrument) }))).toEqual([
-      { tradeId: t3, instrument: 'MNO261120P00045000', quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE },
+      { tradeId: t3, instrument: 'MNO261120P00045000', quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE, beforeCloseTime: '2026-11-20T20:59:00Z' },
     ]);
     expect(card.evaluation).toEqual(expect.objectContaining({ kind: 'Evaluated', valuationDate: '2026-11-20' }));
     expect(card.progress.panels.map((panel) => panel.panel)).toEqual(['Marks', 'Reflections', 'Settlement', 'Action']);

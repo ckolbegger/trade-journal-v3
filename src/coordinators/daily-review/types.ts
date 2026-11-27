@@ -163,6 +163,12 @@ export interface EarlierMark {
 // Shared with Trade Views, which shows the same item on Trade Detail.
 export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, Pressure, PressureResult, SettlementItem };
 
+// A settlement item as the Review shows it: with the time a sale "before the close" is prefilled with, the minute before the
+// settlement instant; absent when the settlement time is not a value (no settlement time, no prefill).
+export interface ReviewSettlementItem extends SettlementItem {
+  readonly beforeCloseTime?: string;
+}
+
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
 export type ReviewFamily =
@@ -170,7 +176,7 @@ export type ReviewFamily =
   // exposure before the Review Date, the Available Marks the Marks grid shows beside the gaps (A288). `open` always sets it.
   | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[]; readonly previousSession?: string; readonly earlierMarks: readonly EarlierMarksGroup[] }
   // Between Marks and the walk; present only when a settlement is due, ordered by expiration date then Trade identity.
-  | { readonly family: 'Settlement'; readonly items: readonly SettlementItem[] }
+  | { readonly family: 'Settlement'; readonly items: readonly ReviewSettlementItem[] }
   | { readonly family: 'Trades'; readonly trades: readonly WalkedTrade[] };
 
 // What keeps the Review from being complete, Marks first and then the Trades in the walk's order.
@@ -387,7 +393,7 @@ export interface DailyTradeReview {
   readonly expiration?: { readonly date: string; readonly sessionsLeft?: number };
   // The option contracts the Trade still holds at or past expiration; empty otherwise. The signed quantity carries the
   // assignment or exercise explanation, the settlement time the Record expiration route (A111, A112, decision 88).
-  readonly settlement: readonly SettlementItem[];
+  readonly settlement: readonly ReviewSettlementItem[];
   // Where the contract settlement is due on finished, from the Underlying's Mark for the expiration session (A314); present only with a settlement
   // item and absent when the Trade's facts cannot be replayed. Unavailable when that session has no Mark for the Underlying.
   readonly expirationStanding?: CalculationResult<ExpirationStandingFigures>;

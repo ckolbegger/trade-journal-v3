@@ -9,7 +9,7 @@ import { cardProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { closeReviewDefinition, plannedDetail, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, OpenDailyReviewResult, ReviewBinding, SettlementItem, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, OpenDailyReviewResult, ReviewBinding, ReviewSettlementItem, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -37,17 +37,19 @@ const binding: ReviewBinding = {
   outstandingDebts: {},
 };
 
-const itemOf = (tradeId: string, instrument: SettlementItem['instrument'], quantity: bigint, settlementTime: SettlementItem['settlementTime'] = { kind: 'Value', value: FRIDAY_CLOSE }): SettlementItem => ({
+// The Review's data carries the Sold before the close time for a settlement time that is a value.
+const itemOf = (tradeId: string, instrument: ReviewSettlementItem['instrument'], quantity: bigint, settlementTime: ReviewSettlementItem['settlementTime'] = { kind: 'Value', value: FRIDAY_CLOSE }): ReviewSettlementItem => ({
   tradeId,
   instrument,
   quantity: Rational.of(quantity),
   expiration: instrument.expiration,
   settlementTime,
+  ...(settlementTime.kind === 'Value' && { beforeCloseTime: '2026-11-20T20:59:00Z' }),
 });
 const MNO_ITEM = itemOf('t3', MNO_PUT, -2n);
 const XYZ_ITEM = itemOf('t1', XYZ_CALL, 1n);
 
-function walked(item: SettlementItem, underlying: string, progress: WalkedTrade['progress']): WalkedTrade {
+function walked(item: ReviewSettlementItem, underlying: string, progress: WalkedTrade['progress']): WalkedTrade {
   return {
     tradeId: item.tradeId,
     underlying,
@@ -88,7 +90,7 @@ function review(over: Partial<Ready> = {}): Ready {
   return over.day ? built : { ...built, day: dayOf(built) };
 }
 
-function tradeReview(walkedTrade: WalkedTrade, item: SettlementItem, over: Partial<DailyTradeReview> = {}): DailyTradeReview {
+function tradeReview(walkedTrade: WalkedTrade, item: ReviewSettlementItem, over: Partial<DailyTradeReview> = {}): DailyTradeReview {
   return {
     tradeId: walkedTrade.tradeId,
     underlying: walkedTrade.underlying,
@@ -156,7 +158,7 @@ describe('settlement family (A112)', () => {
 
 // Not in the breakdown: the rules the block keeps from the Settlement panel (24.2, Q1), each against one card.
 describe('the expiration block around its item', () => {
-  const open = async (item: SettlementItem, underlying: string, progress: WalkedTrade['progress'], over: Partial<DailyTradeReview> = {}, options: { writable?: boolean } = {}) => {
+  const open = async (item: ReviewSettlementItem, underlying: string, progress: WalkedTrade['progress'], over: Partial<DailyTradeReview> = {}, options: { writable?: boolean } = {}) => {
     const trade = walked(item, underlying, progress);
     renderReview(walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, item, over)), options);
     const card = await screen.findByRole('region', { name: `${underlying} review` });
@@ -255,7 +257,7 @@ function withForm(facade: UiFacade): UiFacade {
 }
 
 describe('the expiration block on the card (T95.52)', () => {
-  const openBlock = async (over: Partial<DailyTradeReview> = {}, options: { writable?: boolean; item?: SettlementItem; now?: string } = {}) => {
+  const openBlock = async (over: Partial<DailyTradeReview> = {}, options: { writable?: boolean; item?: ReviewSettlementItem; now?: string } = {}) => {
     const item = options.item ?? CORV_ITEM;
     const trade = walked(item, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
     const facade = withForm(walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, item, over)));
@@ -387,6 +389,13 @@ describe('the expiration block on the card (T95.52)', () => {
     const short = await openBlock({ expirationStanding: IN_THE_MONEY }, { item: itemOf('t5', CORV_PUT, -3n) });
     await user.click(within(short.card).getByRole('button', { name: 'Bought back before the close' }));
     expect(await within(short.card).findByRole('heading', { name: 'Record exit' })).toBeTruthy();
+  });
+
+  it('should prefill the sale form with the time the data supplies and compute nothing', async () => {
+    const user = userEvent.setup();
+    const { card } = await openBlock({ expirationStanding: IN_THE_MONEY }, { item: { ...XYZ_ITEM, beforeCloseTime: '2026-11-20T20:30:00Z' } });
+    await user.click(within(card).getByRole('button', { name: 'Sold before the close' }));
+    expect((await within(card).findByLabelText<HTMLInputElement>('Economic Time')).value).toBe('2026-11-20T15:30');
   });
 
   it('should prefill the expiration day before the close when Sold before the close is pressed on expiration day', async () => {

@@ -54,7 +54,7 @@ import type {
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
   SavedMark,
-  SettlementItem,
+  ReviewSettlementItem,
   SaveReviewMarksRequest,
   SaveReviewMarksResult,
   SaveTradeActionRequest,
@@ -237,6 +237,9 @@ type ReflectionCounts = { readonly due: number; readonly later: number };
 const reflectionsPanel = (reflections: ReflectionCounts): PanelProgress => ({ panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later });
 
 // A card's panels in work order; it is done when every panel is (A164).
+// The minute before the settlement instant: the time a sale "before the close" is dated.
+const beforeTheClose = (settlement: string): string => new Date(Date.parse(settlement) - 60000).toISOString().replace('.000Z', 'Z');
+
 function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, hasAction: boolean, settlement?: { readonly settledLater: boolean }): CardProgress {
   // A Trade with Settlement Due owes no Action (A316).
   const owed = !hasAction && settlement === undefined;
@@ -495,9 +498,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // The option contracts the walked Trades still hold at or past expiration, by expiration date then Trade identity (A112).
   // The module lists each Trade's items with their settlement times; they are put in that order here.
-  const settlementItems = (ranked: readonly { readonly valuation: ValuedTrade | undefined }[]): SettlementItem[] =>
+  const settlementItems = (ranked: readonly { readonly valuation: ValuedTrade | undefined }[]): ReviewSettlementItem[] =>
     ranked
       .flatMap(({ valuation }) => valuation?.settlement ?? [])
+      .map((item): ReviewSettlementItem => (item.settlementTime.kind === 'Value' ? { ...item, beforeCloseTime: beforeTheClose(item.settlementTime.value) } : item))
       .sort((a, b) => (a.expiration === b.expiration ? (a.tradeId < b.tradeId ? -1 : Number(a.tradeId > b.tradeId)) : a.expiration < b.expiration ? -1 : 1));
 
   // Each Instrument's gaps once, as one recovery over every walked Trade lists them: each Trade's answer is its Instrument's scan

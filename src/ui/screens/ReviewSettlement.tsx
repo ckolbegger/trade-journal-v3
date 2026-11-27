@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { ExpirationForm } from './ExpirationForm.tsx';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, SettlementItem, TradeSaveBinding } from '../../app/types.ts';
+import type { DailyTradeReview, ReviewSettlementItem, TradeSaveBinding } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { signed } from '../figures.ts';
 import { money, rMultiple, shortDate } from '../format.ts';
@@ -11,7 +11,7 @@ import type { FormHandle } from './form-handle.ts';
 
 export interface ExpirationBlockProps {
   readonly facade: UiFacade;
-  readonly item: SettlementItem;
+  readonly item: ReviewSettlementItem;
   readonly underlying: string;
   // Where the contract finished, from the view; absent when the Trade's facts cannot be replayed.
   readonly standing: DailyTradeReview['expirationStanding'];
@@ -42,9 +42,6 @@ const unsigned = (amount: Rational): Rational => (amount.compare(ZERO) < 0 ? amo
 
 // A refused save that read the Review again would not repeat itself; any other refusal could not write at all.
 const refusalOf = (kind: string): 'Changed' | 'Failed' => (['ReviewChanged', 'ChangedDuringAssembly', 'Conflict'].includes(kind) ? 'Changed' : 'Failed');
-
-// The minute before the settlement: the time a sale "before the close" is dated.
-const beforeClose = (settlement: string): string => new Date(Date.parse(settlement) - 60000).toISOString().replace('.000Z', 'Z');
 
 // Where the Underlying finished against the strike, in words.
 function sideOf(price: Rational, strike: Rational): string {
@@ -115,7 +112,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
     }
   };
   const sellButton = (words: string) => (
-    <button type="button" className="pill secondary" data-sale-opener disabled={saving} onClick={() => onSell(item.settlementTime.kind === 'Value' ? beforeClose(item.settlementTime.value) : undefined)}>
+    <button type="button" className="pill secondary" data-sale-opener disabled={saving} onClick={() => onSell(item.beforeCloseTime)}>
       {words} before the close
     </button>
   );
