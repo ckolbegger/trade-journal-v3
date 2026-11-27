@@ -1626,3 +1626,15 @@ ocr of T95.67-B1 (session 79044970): complete, 2 files, no findings. `evidence/D
 Commit `82920e50`: the "Exit not carried out" group's reasons now keep the lines a Trade is at or past (`attentionOf`; its rank unchanged), and `describedLabelsOf` reads the label from them (Past Stop over At Target). Coordinator cases (Target, Stop) and label cases 1 and 2 red then green; the inside-the-lines coordinator case and label case 3 first-run passes, flagged, each mutation-checked and restored. The hidden "100% of the way from entry to the Target" goes with the old label; the reason reads "Target reached". `verify:fixtures` exit 0 (main session, after the commit). src/ui/screens and src/coordinators 1602 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser day-card, card, action 15 passed.
 
 ocr of T95.67-B2 (session aeda8eac): complete, 4 files, no findings. `evidence/D95/ocr/T95.67-B2-82920e50.json`.
+
+### T95.67-B3
+
+Commit `b2484a46`: `ExpirationStandingFigures` gains `contractsCost` (signed, with the unconsumed opening fee); the out-of-the-money line names it ("paid" when positive, "You keep" otherwise). Cases red then green (domain and UI, part sold); whole-cost and short cases first-run passes, flagged, mutation-checked. B95.11's quoted figure in `e2e/d95/expiration.spec.ts:80` changed from $101.95 to $190.65. `verify:fixtures` exit 0. Browser expiration and d7 review-expiration 10 passed. **Parked:** W141's word row names the Trade's result; asked as Q17. Its ocr waits for the answer.
+
+### T95.67-B4
+
+Commit `d7a9fca1`: "Sold before the close" prefills the contract's settlement instant minus one minute (15:59 on the expiration day), on expiration day and on a later Review; the ordinary sale form keeps its default. Cases 1 and 2 red then green; case 3 first-run pass, flagged, mutation-checked. Browser expiration, settle-later, sale, d7 review-expiration 20 passed.
+
+ocr of T95.67-B4 (session a35218b1): 5 files, 1 finding, Valid. `evidence/D95/ocr/T95.67-B4-d7a9fca1.json`.
+- **T95.67-B4-B1** (Valid, medium, `ReviewSettlement.tsx:47`): the UI works out the pre-close time (settlement minus 60 s), against ADR 0001; the Daily Review read should supply it. Cases: it should take the "Sold before the close" time from the Review's data, not compute it in the screen; the prefill stays 15:59 on the expiration day.
+- Reviewer's note (not an ocr finding): when the settlement time is not a value, the form still fills the current time.

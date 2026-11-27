@@ -1,0 +1,157 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 122687,
+    "input_tokens": 121615,
+    "output_tokens": 1072,
+    "cache_read_tokens": 21632,
+    "elapsed": "27s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 10,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewSettlement.tsx",
+      "content": "This computes a domain time in the UI and hardcodes the one-minute offset, contrary to ADR 0001 and the requirement that times come from the coordinator/domain. Have the Daily Review read expose the pre-close sale default (including how unavailable settlement times are handled), and forward that value here instead of deriving it in the component. This keeps the expiration-time policy authoritative outside the UI.",
+      "existing_code": "const beforeClose = (settlement: string): string =\u003e new Date(Date.parse(settlement) - 60000).toISOString().replace('.000Z', 'Z');",
+      "start_line": 47,
+      "end_line": 47,
+      "category": "maintainability",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action form updates",
+      "files": [
+        "src/ui/screens/ActionForm.tsx"
+      ]
+    },
+    {
+      "label": "Review card component and tests",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx"
+      ]
+    },
+    {
+      "label": "Review settlement component and tests",
+      "files": [
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "a35218b1-3a41-4b62-ba4c-2dc04a66401d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a35218b1-3a41-4b62-ba4c-2dc04a66401d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d7a9fca1",
+      "resolved_base": "629384e1a291ae167e079fd218103a96e6b090b4",
+      "resolved_head": "d7a9fca1990ec6d2039fbb216e03ebc871a0d3cc",
+      "exact_range": "629384e1a291ae167e079fd218103a96e6b090b4..d7a9fca1990ec6d2039fbb216e03ebc871a0d3cc",
+      "source_artifact_sha256": "f702647faf7e90753a5c87b883916f3a7654913e62d0416c85c13b69cc2c39ed"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "6b2216aa6b26ae80d090d98476d33473801918d9241c0ed306b826984e387f40"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "5a6bd7e43821492afd2ecaa94e5fbe77bc6f136f81b9214c88c536b26623522d"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "6f5eaa8198b9c1cfbc47d9e3f261e1501e7b041d16798350f970e38d972ee748"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "864cee0cd54627588f13505301378b186baf10084486d9c77b89cacc02547f9c"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "144dfd3ffed1384304cad76e715672d2050b27bb2222d32f86a3f4b4b3ef7604"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "6b2216aa6b26ae80d090d98476d33473801918d9241c0ed306b826984e387f40"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "5a6bd7e43821492afd2ecaa94e5fbe77bc6f136f81b9214c88c536b26623522d"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "6f5eaa8198b9c1cfbc47d9e3f261e1501e7b041d16798350f970e38d972ee748"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "864cee0cd54627588f13505301378b186baf10084486d9c77b89cacc02547f9c"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "144dfd3ffed1384304cad76e715672d2050b27bb2222d32f86a3f4b4b3ef7604"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b6cc3de5e0a29048fcf075403f2b57236dc30415d0bd713dbbae1923be3a8fb4",
+          "path": "evidence/D95/tdd-log/T95.67-B4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 27189
+  }
+}
