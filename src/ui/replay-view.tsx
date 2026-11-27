@@ -9,6 +9,7 @@ type Props = {
   index: number
   onSelect: (index: number) => void
   onBack: () => void
+  embedded?: boolean
 }
 
 const VISUALIZATIONS = [
@@ -92,7 +93,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-export function ReplayView({ loaded, index, onSelect, onBack }: Props) {
+export function ReplayView({ loaded, index, onSelect, onBack, embedded }: Props) {
   const [priceAction, setPriceAction] = useState<'Bullish' | 'Bearish'>('Bullish')
   const [visualization, setVisualization] = useState<string>('Corridor')
   const [popover, setPopover] = useState<string | null>(null)
@@ -128,7 +129,7 @@ export function ReplayView({ loaded, index, onSelect, onBack }: Props) {
 
   return (
     <section aria-label="Session replay" data-testid="replay-view" className="card">
-      <button type="button" className="detail-link" onClick={onBack}>Back to detail</button>
+      {!embedded && <button type="button" className="detail-link" onClick={onBack}>Back to detail</button>}
       <p className="section-label">Session replay</p>
 
       <div className="replay-controls">

@@ -4,7 +4,7 @@ import {
   confirmPlanFromDraft, initialPlanState, loadPlannedTrades, previewPlan,
   type PlanDraft, type PlanState,
 } from './plan-controller'
-import { openDb } from '../persistence/db'
+import { openDb, repo } from '../persistence/db'
 import {
   readCloseReasonLabels, strategyIdOf, toStoredClosedTrade, toStoredOpenTrade,
 } from './trade-read'
@@ -31,6 +31,7 @@ import { recordOptionPositionChange, recordOptionClose } from './option-controll
 import { loadCompleteTradeDetail, type LoadedDetail } from './detail-controller'
 import { CompleteDetailView } from './complete-detail-view'
 import { ReplayView } from './replay-view'
+import { ReviewView as ReviewScreen } from './review-view'
 import { payoffForPlan } from '../domain/complete-detail'
 import { D8A_CAPABILITIES } from '../domain/capabilities-d8a'
 
@@ -130,8 +131,6 @@ function closeDispositionOf(form: CloseForm): ReflectionDisposition {
   return { kind: 'Defer' }
 }
 
-const completionLabel = (state: string) =>
-  state === 'CompleteWithUnavailableMarks' ? 'Complete with unavailable Marks' : state
 // Explicit View Moment: noon Tuesday resolves Monday as the Expected Mark Date.
 const VIEW_MOMENT = new Date('2026-11-24T17:00:00Z')
 
@@ -225,6 +224,9 @@ export function App() {
   const [reviewError, setReviewError] = useState('')
   const [completeDetail, setCompleteDetail] = useState<LoadedDetail | null>(null)
   const [replayOpen, setReplayOpen] = useState(false)
+  const [overlayMode, setOverlayMode] = useState<'replay' | 'close' | null>(null)
+  const [overlayDetail, setOverlayDetail] = useState<LoadedDetail | null>(null)
+  const [closeReviewStatuses, setCloseReviewStatuses] = useState<Record<string, string>>({})
   const [replayIndex, setReplayIndex] = useState(0)
 
   useEffect(() => {
@@ -366,6 +368,20 @@ export function App() {
     setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, await openDb(), VIEW_MOMENT))
   }, [selectedOpen, selectedEvaluation, markDraft, state.readiness])
 
+  const refreshCloseReviewStatuses = useCallback(async () => {
+    const rows = await repo.all<Record<string, unknown> & { id: string }>(await openDb(), 'journal')
+    const statuses: Record<string, string> = {}
+    for (const row of rows) {
+      const key = String(row.obligationKey ?? '')
+      if (!key.startsWith('CloseReview:')) continue
+      const tradeId = key.slice('CloseReview:'.length)
+      if (row.kind === 'Entry') statuses[tradeId] = 'saved'
+      else if (row.kind === 'JournalDecline') statuses[tradeId] = 'declined'
+      else if (row.kind === 'Debt' && row.status !== 'Settled' && !statuses[tradeId]) statuses[tradeId] = 'deferred'
+    }
+    setCloseReviewStatuses(statuses)
+  }, [])
+
   const onOpenReview = useCallback(async () => {
     setClosingId(null)
     setCloseForm(emptyCloseForm())
@@ -381,13 +397,41 @@ export function App() {
     }])))
     setReviewMessage('')
     setReviewError('')
+    await refreshCloseReviewStatuses()
+  }, [refreshCloseReviewStatuses])
+
+  const onOpenOverlayReplay = useCallback(async (tradeId: string) => {
+    const loaded = await loadCompleteTradeDetail({
+      tradeId, now: VIEW_MOMENT,
+      advisoryInstalled: D8A_CAPABILITIES.some(c => c === 'TradeAnalysis.advisoryExplanation(IV)'),
+    })
+    setOverlayDetail(loaded)
+    setReplayIndex(loaded.status === 'Ready' ? Math.max(0, loaded.series.sessions.length - 1) : 0)
+    setOverlayMode('replay')
   }, [])
 
-  const onReviewMark = useCallback(async (tradeId: string, intention: 'RecordManualMark' | 'AcknowledgeUnavailable') => {
+  const onOpenOverlayCloseReview = useCallback(async (tradeId: string) => {
+    const loaded = await loadCompleteTradeDetail({
+      tradeId, now: VIEW_MOMENT,
+      advisoryInstalled: D8A_CAPABILITIES.some(c => c === 'TradeAnalysis.advisoryExplanation(IV)'),
+    })
+    setOverlayDetail(loaded)
+    setReplayIndex(loaded.status === 'Ready' ? Math.max(0, loaded.series.sessions.length - 1) : 0)
+    setCloseReviewOpen(tradeId)
+    setCloseReviewForm(emptyCloseReviewForm())
+    setCloseReviewError('')
+    setOverlayMode('close')
+  }, [])
+
+  const onReviewMark = useCallback(async (
+    tradeId: string,
+    intention: 'RecordManualMark' | 'AcknowledgeUnavailable',
+    override?: { price: string; reason: string },
+  ) => {
     if (!review) return
     const item = review.items.find(i => i.trade.id === tradeId)
     if (!item) return
-    const draft = reviewDrafts[tradeId] ?? { price: '', reason: '' }
+    const draft = override ?? reviewDrafts[tradeId] ?? { price: '', reason: '' }
     const result = await saveManualMark({
       instrument: item.trade.plan.underlying,
       date: review.reviewDate,
@@ -641,6 +685,16 @@ export function App() {
       : result.value.outcome.kind === 'JournalDecline' ? 'Declined' : 'Outstanding Debt')
     await showClosed(trade)
   }, [closeReviewForm, state.readiness, showClosed])
+
+  const onSaveCloseReviewFromReview = useCallback(async () => {
+    const trade = closedTrades.find(t => t.id === closeReviewOpen)
+    if (!trade) return
+    await onSaveCloseReview(trade)
+    setOverlayMode(null)
+    setScreen('review')
+    setReview(await openReview(VIEW_MOMENT))
+    await refreshCloseReviewStatuses()
+  }, [closedTrades, closeReviewOpen, onSaveCloseReview, refreshCloseReviewStatuses])
 
   const updateExecution = (index: number, field: keyof ExecutionDraft, value: string) => {
     setPositionForm(f => ({
@@ -1351,118 +1405,114 @@ export function App() {
               )}
 
               {screen === 'review' && (
-                <section aria-label="Daily Review" className="card">
-                  <p className="section-label">Daily review</p>
-                  <h2>Review — <span data-testid="review-date">{review?.reviewDate ?? '…'}</span></h2>
-                  <p data-testid="review-completion">{completionLabel(review?.completion.state ?? 'Incomplete')}</p>
-                  <div className="steps">
-                    {(['Marks', 'Debt', 'Settlement', 'Trades'] as const).map(step => (
-                      <span key={step} data-review-step className={review?.tasks.some(t => t.kind === step) ? 'now' : ''}>{step}</span>
-                    ))}
-                  </div>
-                  <p data-testid="action-gate" role="status">
-                    {review?.missingMarks.length ? 'MarkMissing — record an exact Mark before saving an Action.' : 'Evidence ready'}
-                  </p>
-                  <div data-testid="review-due-debt">
-                    {review?.dueDebt.map(debt => (
-                      <div key={debt.id} className="card">
-                        <p>Due Debt: {debt.obligationKey}</p>
-                        {debt.obligationKey.startsWith('CloseReview:') ? (
-                          <>
-                            <label htmlFor={`debt-answer-${debt.id}`}>Review TakeAgain</label>
-                            <select
-                              id={`debt-answer-${debt.id}`}
-                              value={reviewDebtAnswers[debt.id] ?? ''}
-                              onChange={e => setReviewDebtAnswers(a => ({ ...a, [debt.id]: e.target.value }))}
-                            >
-                              <option value="">Choose…</option>
-                              <option>Yes, as planned</option><option>Yes, with changes</option>
-                              <option>No</option><option>Unsure</option>
-                            </select>
-                            <button type="button" onClick={() => {
-                              void onResolveDebt(debt.id, '', { takeAgain: reviewDebtAnswers[debt.id] ?? '' })
-                            }}>Answer Close Review debt</button>
-                          </>
-                        ) : (
-                          <button type="button" onClick={() => { void onResolveDebt(debt.id, 'resolved in review') }}>Resolve debt</button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {review?.items.map(item => {
-                    const form = actionForms[item.trade.id] ?? newActionForm()
-                    const draft = reviewDrafts[item.trade.id] ?? { price: '', reason: '' }
-                    const reconciled = (item.trade.deviations?.length ?? 0) > 0
-                    return (
-                      <section key={item.trade.id} className="card" aria-label={`Trade ${item.trade.plan.underlying}`}>
-                        <div className="sheet-header">
-                          <div>
-                            <p className="section-label">{item.attention.band} · {item.attention.reasons.join(', ')}</p>
-                            <h3>{item.trade.plan.underlying}</h3>
-                          </div>
-                          <span className="badge badge-open">{item.trade.lifecycle}</span>
+                <>
+                  <ReviewScreen
+                    review={review}
+                    actionForms={actionForms}
+                    drafts={reviewDrafts}
+                    debtAnswers={reviewDebtAnswers}
+                    closedTrades={closedTrades}
+                    closeReviewStatuses={closeReviewStatuses}
+                    message={reviewMessage}
+                    error={reviewError}
+                    onMark={(id, intention, override) => { void onReviewMark(id, intention, override) }}
+                    onDraft={(id, draft) => setReviewDrafts(d => ({ ...d, [id]: draft }))}
+                    onActionForm={(id, form) => setActionForms(f => ({ ...f, [id]: form }))}
+                    onSaveAction={(id) => { void onSaveAction(id) }}
+                    onResolveDebt={(id, reason, answers) => { void onResolveDebt(id, reason, answers) }}
+                    onDebtAnswer={(id, value) => setReviewDebtAnswers(a => ({ ...a, [id]: value }))}
+                    onReplay={(id) => { void onOpenOverlayReplay(id) }}
+                    onCloseReview={(id) => { void onOpenOverlayCloseReview(id) }}
+                  />
+                  {overlayMode === 'replay' && overlayDetail && (
+                    <div className="ov" role="dialog" aria-label="Replay" aria-modal="true">
+                      <header className="ov-head">
+                        <h2>Replay</h2>
+                        <button type="button" onClick={() => { setOverlayMode(null); setOverlayDetail(null) }}>Back to the Review</button>
+                      </header>
+                      <ReplayView
+                        loaded={overlayDetail}
+                        index={replayIndex}
+                        onSelect={setReplayIndex}
+                        onBack={() => { setOverlayMode(null); setOverlayDetail(null) }}
+                        embedded
+                      />
+                    </div>
+                  )}
+                  {overlayMode === 'close' && closeReviewOpen && (
+                    <div className="ov" role="dialog" aria-label="Close Review" aria-modal="true">
+                      <header className="ov-head">
+                        <h2>Close Review</h2>
+                        <button type="button" onClick={() => setOverlayMode(null)}>Back to the Review</button>
+                      </header>
+                      <div className="ov-body">
+                        <div className="ov-hero">
+                          <p className="section-label">How it ended</p>
+                          <strong className="ov-figure">
+                            {closedTrades.find(t => t.id === closeReviewOpen)?.realizedToDate ?? '—'}
+                          </strong>
+                          <p className="muted">realized to date</p>
+                          <label htmlFor="cr-key-moment">Key moments</label>
+                          <select id="cr-key-moment">
+                            <option>No key moments</option>
+                            {overlayDetail?.status === 'Ready' && overlayDetail.series.sessions.flatMap(session =>
+                              session.keyMoments.map(moment => (
+                                <option key={`${session.date}-${moment}`}>{moment} on {session.date}</option>
+                              )),
+                            )}
+                          </select>
+                          <button type="button" onClick={() => setOverlayMode('replay')}>Replay</button>
+                          <dl className="kv">
+                            <dt>Stop</dt><dd>{overlayDetail?.status === 'Ready' ? overlayDetail.detail.stopsAndTargets.stop : '—'}</dd>
+                            <dt>Target</dt><dd>{overlayDetail?.status === 'Ready' ? overlayDetail.detail.stopsAndTargets.target : '—'}</dd>
+                          </dl>
                         </div>
-                        <p data-testid="review-mark-status">
-                          {item.frame.status === 'AcknowledgedUnavailable' ? 'Acknowledged Unavailable' : item.frame.status}
-                        </p>
-                        {item.frame.price && (
-                          <p className="muted">Saved Mark: {item.frame.price} on {item.frame.date}. Edit and record to override.</p>
-                        )}
-                        <div className="field-grid">
-                          <div>
-                            <label htmlFor={`review-price-${item.trade.id}`}>Review mark price</label>
-                            <input id={`review-price-${item.trade.id}`} value={draft.price} onChange={e => setReviewDrafts(d => ({
-                              ...d, [item.trade.id]: { ...draft, price: e.target.value },
-                            }))} />
-                          </div>
-                          <div>
-                            <label htmlFor={`review-reason-${item.trade.id}`}>Review unavailability reason</label>
-                            <input id={`review-reason-${item.trade.id}`} value={draft.reason} onChange={e => setReviewDrafts(d => ({
-                              ...d, [item.trade.id]: { ...draft, reason: e.target.value },
-                            }))} />
-                          </div>
-                        </div>
-                        <div className="sheet-actions">
-                          <button type="button" onClick={() => { void onReviewMark(item.trade.id, 'RecordManualMark') }}>Record mark for review</button>
-                          <button type="button" onClick={() => { void onReviewMark(item.trade.id, 'AcknowledgeUnavailable') }}>Acknowledge for review</button>
-                        </div>
-                        <p data-testid="review-episode">
-                          {reconciled ? 'Stop episode reconciled' : item.replay.episodes.length
-                            ? `Stop episode from ${item.replay.episodes[0].start}`
-                            : 'No Stop episode'}
-                        </p>
+                        <form className="sheet" aria-label="Close Review form" onSubmit={e => {
+                          e.preventDefault()
+                          void onSaveCloseReviewFromReview()
+                        }}>
                         <fieldset>
-                          <legend>Daily Trade Review Action</legend>
-                          {(['Hold', 'Exit', 'Roll', 'Adjust'] as const).map(action => (
-                            <label key={action} className="pill-option">
-                              <input
-                                type="radio"
-                                name={`action-${item.trade.id}`}
-                                checked={form.action === action}
-                                onChange={() => setActionForms(f => ({ ...f, [item.trade.id]: { ...form, action } }))}
-                              /> {action} action
-                            </label>
-                          ))}
-                          {form.action !== 'Hold' && (
-                            <div>
-                              <label htmlFor={`intent-${item.trade.id}`}>Review action intent</label>
-                              <input
-                                id={`intent-${item.trade.id}`}
-                                value={form.intent ?? ''}
-                                onChange={e => setActionForms(f => ({ ...f, [item.trade.id]: { ...form, intent: e.target.value } }))}
-                              />
-                            </div>
-                          )}
+                          <legend>Outcome</legend>
+                          <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Complete'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Complete' }))} /> Complete review</label>
+                          <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Defer'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Defer' }))} /> Defer review</label>
+                          <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Decline'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Decline' }))} /> Decline review</label>
                         </fieldset>
+                        {closeReviewForm.disposition === 'Complete' && (
+                          <div className="field-grid">
+                            <div>
+                              <label htmlFor="cr-take-again-review">Would you take this Trade again?</label>
+                              <select id="cr-take-again-review" value={closeReviewForm.takeAgain} onChange={e => setCloseReviewForm(f => ({ ...f, takeAgain: e.target.value }))}>
+                                <option value="">Choose…</option>
+                                <option>Yes, as planned</option><option>Yes, with changes</option>
+                                <option>No</option><option>Unsure</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label htmlFor="cr-worked-review">What worked and what did not?</label>
+                              <input id="cr-worked-review" value={closeReviewForm.worked} onChange={e => setCloseReviewForm(f => ({ ...f, worked: e.target.value }))} />
+                            </div>
+                            <div>
+                              <label htmlFor="cr-lesson-review">Key lesson</label>
+                              <input id="cr-lesson-review" value={closeReviewForm.lesson} onChange={e => setCloseReviewForm(f => ({ ...f, lesson: e.target.value }))} />
+                            </div>
+                          </div>
+                        )}
+                        {closeReviewForm.disposition === 'Decline' && (
+                          <div>
+                            <label htmlFor="cr-reason-review">Decline reason</label>
+                            <input id="cr-reason-review" value={closeReviewForm.reason} onChange={e => setCloseReviewForm(f => ({ ...f, reason: e.target.value }))} />
+                          </div>
+                        )}
                         <div className="sheet-actions">
-                          <button type="button" disabled={item.frame.status === 'Missing'} onClick={() => { void onSaveAction(item.trade.id) }}>Save action</button>
+                          <button type="submit">Save Close Review</button>
+                          <button type="button" onClick={() => setOverlayMode(null)}>Cancel</button>
                         </div>
-                      </section>
-                    )
-                  })}
-                  {reviewMessage && <p role="status">{reviewMessage}</p>}
-                  {reviewError && <p role="alert">{reviewError}</p>}
-                </section>
+                        {closeReviewError && <p role="alert">{closeReviewError}</p>}
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
