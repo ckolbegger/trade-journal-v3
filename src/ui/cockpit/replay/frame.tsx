@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
 import { Words } from './figure-words.tsx';
 import { ActionRow } from './action-row.tsx';
@@ -11,6 +11,8 @@ import { SessionCards } from './session-cards.tsx';
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
 export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plan, plotBase, Plot, actionKey, keyMoments, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
+  const previousRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
   // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
@@ -34,6 +36,11 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
     setHeld({ tradeKey, date });
     // A257: only a real move is told to the screen, never the first render or a step against an end.
     if (date !== session.date) onSessionChange?.(date);
+  };
+  // A327: a step button about to be disabled at an end hands focus to the other one, so focus stays in the dialog and Escape still closes it.
+  const step = (to: number, other: { current: HTMLButtonElement | null }) => {
+    if (to <= 0 || to >= last) other.current?.focus();
+    move(to);
   };
   // The keys are handled here so every browser steps the same way; the native step is cancelled.
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -91,11 +98,11 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
       )}
       {keyMoments && <KeyMoments words={keyMoments} current={session.date} onChoose={(date) => move(sessions.findIndex((s) => s.date === date))} />}
       <div className="replay-slider">
-        <button type="button" aria-label={previousLabel} disabled={current === 0} onClick={() => move(current - 1)}>
+        <button type="button" ref={previousRef} aria-label={previousLabel} disabled={current === 0} onClick={() => step(current - 1, nextRef)}>
           ‹
         </button>
         <input type="range" aria-label={sliderLabel} aria-valuetext={`${session.sliderValue}. ${headline}`} min={0} max={last} value={current} onChange={(event) => move(Number(event.target.value))} onKeyDown={onKeyDown} />
-        <button type="button" aria-label={nextLabel} disabled={current === last} onClick={() => move(current + 1)}>
+        <button type="button" ref={nextRef} aria-label={nextLabel} disabled={current === last} onClick={() => step(current + 1, previousRef)}>
           ›
         </button>
         <span className="replay-slider-value" aria-hidden="true">

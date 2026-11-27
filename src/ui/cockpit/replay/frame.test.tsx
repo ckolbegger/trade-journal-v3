@@ -5,6 +5,7 @@ import type { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ReplayFrame } from './frame.tsx';
+import { ReplayOverlay } from './overlay.tsx';
 import type { PlotSession, ReplayFrameSession, ReplayPlotProps, ReplayProps } from './replay.types.ts';
 
 afterEach(cleanup);
@@ -115,6 +116,47 @@ describe('Replay: a session with no Mark (suggestion 12)', () => {
     unmount();
     render(<MemoryRouter><ReplayFrame {...noMark()} /></MemoryRouter>);
     expect(screen.queryByRole('link', { name: 'Add the Mark' })).toBeNull();
+  });
+});
+
+describe('Replay frame: focus at the ends (A327)', () => {
+  const inDialog = (el: Element | null) => el !== null && el.closest('[role="dialog"], .replay-card') !== null;
+  it('should move focus to the other step button when Previous session becomes disabled at the first session', async () => {
+    const user = userEvent.setup();
+    render(<ReplayFrame {...props({ initialSession: '2026-11-03' })} />);
+    const previous = screen.getByRole('button', { name: 'Previous session' });
+    previous.focus();
+    await user.click(previous);
+    expect(screen.getByTestId('session-date').textContent).toBe('Mon Nov 2');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next session' }));
+  });
+
+  it('should move focus to the other step button when Next session becomes disabled at the newest session', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ReplayFrame {...props({}, 11)} />);
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    const next = screen.getByRole('button', { name: 'Next session' });
+    next.focus();
+    await user.click(next);
+    expect(value()).toBe('10');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous session' }));
+    expect(inDialog(document.activeElement)).toBe(true);
+    expect(container.contains(document.activeElement)).toBe(true);
+  });
+
+  it('should close the Replay on Escape right after, and return focus to the Replay button', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(
+      <MemoryRouter>
+        <ReplayOverlay name="Replay, BREN" header="BREN" onClose={onClose}>
+          <ReplayFrame {...props({ initialSession: '2026-11-03' })} />
+        </ReplayOverlay>
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 
