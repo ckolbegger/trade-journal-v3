@@ -119,3 +119,7 @@ Critic C3's minor observations (T95.67):
 - Benchmark (T95.67, the user's answer to Q18, 2026-11-27): `tools/bench-run.ts` (282, 346, 429) still reads the old Review status block and its Blockers list, removed by T95.10, so `bench:run` times out and the Review-open time at scale (AC-PERF-001, A326) is not measured; the capacity steps pass. Fix: read the new page's day card and owed group, then rerun the benchmark.
 
 - Word review (the user, 2026-11-27): the saved "record later" card header reads "Done · Settle Later" (`todoText`); approved wording is W101's "Settle later".
+
+User rulings at review (2026-11-27):
+- Critic C1's Now-box observation: follow Trade Detail. On the expiration evening the Now box stops measuring an expired contract (no "to Stop", no worst case); the expiration block carries what is left. Follow-on task for the next deliverable.
+- A $0.00 result after a part sale keeps "Your net gain on the trade is $0.00"; no new wording.
