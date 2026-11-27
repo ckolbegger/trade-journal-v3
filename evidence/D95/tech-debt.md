@@ -1,6 +1,6 @@
 # D9.5 tech debt
 
-Style-only ocr findings and low critic defects (the user's rule, 2026-11-19). Reviewed with the user after the final gate.
+Style-only ocr findings and low critic defects (the user's rule, 2026-11-19). Reviewed with the user after the final gate: on 2026-11-27 the user kept every item as tech debt (none scheduled yet).
 
 | Source | Kind | Item |
 |---|---|---|
