@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 103230,
+    "input_tokens": 102483,
+    "output_tokens": 747,
+    "cache_read_tokens": 22016,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 10,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Expiration standing analysis and review coverage",
+      "files": [
+        "e2e/d95/expiration.spec.ts",
+        "src/domain/trade-analysis/expiration-standing.test.ts",
+        "src/domain/trade-analysis/expiration-standing.ts",
+        "src/ui/screens/ReviewExpiration.test.tsx"
+      ]
+    },
+    {
+      "label": "Settlement coordination and review screen",
+      "files": [
+        "src/coordinators/settlement.test.ts",
+        "src/coordinators/settlement.ts",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "3ecfee07-a535-4b28-92dc-91431c815a7f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3ecfee07-a535-4b28-92dc-91431c815a7f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "77c3c491",
+      "resolved_base": "c383fc6501d0c324c12f10d55c879aaba8488831",
+      "resolved_head": "77c3c491494ed66c034e9d043d1d763ef1dc9b97",
+      "exact_range": "c383fc6501d0c324c12f10d55c879aaba8488831..77c3c491494ed66c034e9d043d1d763ef1dc9b97",
+      "source_artifact_sha256": "80fefa058dbdf2be9ed3333e7653e04b0e1dd98dd29e947408e3d891d5a0ec9b"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "52041620d43a1acf4caa88a766273f1f4c514cfb865e43b93d3a135f6c99bdad"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "bc8044d8f7ba07c2bab1afe77c6a4ea335cbece6acd914dca8b5b0e769ae52cc"
+        },
+        {
+          "item_id": "269abd4093229d67915a4ca24a3be2288875ac9f940187ba408d649320ac4a0d",
+          "path": "src/domain/trade-analysis/expiration-standing.test.ts",
+          "fingerprint": "0cbee65c274df8bf8755a48b036b479cc9c66459c9b7a1fe9a8af8f63b930e0e"
+        },
+        {
+          "item_id": "30836fa84427a7dcaf2c6aac89bb3d798ec2fe63e2032f205e86c8b17b73cb7a",
+          "path": "src/domain/trade-analysis/expiration-standing.ts",
+          "fingerprint": "2aa1d125f87f764731f6c643c3b19c2181da9db99aa76d4b8b00bc8cec21fb2d"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "e4065ad3aee91a9f99aafddf4336595008cc06a506777fe975e775e5e8e5ddb1"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "4f7ead3006aa165f0e11dd5f130e3a993ebbe3dad581cb2a1656dc3b3349c0f2"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "69ec488eda59090365e801d0c8e6b30f93ceacb5e0a05e61c764155178c50b00"
+        },
+        {
+          "item_id": "e3b95698e2855910c3639401b93404d379a323f62d4e3ac617cd7dd0358d1522",
+          "path": "src/coordinators/settlement.test.ts",
+          "fingerprint": "b6c1837a1f54fb06b3971b21262ddb2c8070b9b59344966361077506d5f62467"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "52041620d43a1acf4caa88a766273f1f4c514cfb865e43b93d3a135f6c99bdad"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "bc8044d8f7ba07c2bab1afe77c6a4ea335cbece6acd914dca8b5b0e769ae52cc"
+        },
+        {
+          "item_id": "269abd4093229d67915a4ca24a3be2288875ac9f940187ba408d649320ac4a0d",
+          "path": "src/domain/trade-analysis/expiration-standing.test.ts",
+          "fingerprint": "0cbee65c274df8bf8755a48b036b479cc9c66459c9b7a1fe9a8af8f63b930e0e"
+        },
+        {
+          "item_id": "30836fa84427a7dcaf2c6aac89bb3d798ec2fe63e2032f205e86c8b17b73cb7a",
+          "path": "src/domain/trade-analysis/expiration-standing.ts",
+          "fingerprint": "2aa1d125f87f764731f6c643c3b19c2181da9db99aa76d4b8b00bc8cec21fb2d"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "e4065ad3aee91a9f99aafddf4336595008cc06a506777fe975e775e5e8e5ddb1"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "4f7ead3006aa165f0e11dd5f130e3a993ebbe3dad581cb2a1656dc3b3349c0f2"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "69ec488eda59090365e801d0c8e6b30f93ceacb5e0a05e61c764155178c50b00"
+        },
+        {
+          "item_id": "e3b95698e2855910c3639401b93404d379a323f62d4e3ac617cd7dd0358d1522",
+          "path": "src/coordinators/settlement.test.ts",
+          "fingerprint": "b6c1837a1f54fb06b3971b21262ddb2c8070b9b59344966361077506d5f62467"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4729fe6283bc44914b448372c20d519162e1cd1f2c970e62f3f07ef5a0faa01b",
+          "path": "evidence/D95/tdd-log/T95.67-B3-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19565
+  }
+}
