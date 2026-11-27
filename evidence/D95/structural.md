@@ -1705,3 +1705,5 @@ Commit `77c3c491` (the user's answer to Q17): `contractsCost` removed; `Expirati
 - T95.67-B3's own ocr is not run separately: B3-D1 rewrites everything B3 changed except the browser case's quoted line, so the review of `77c3c491` covers B3's net effect. Main-session decision, recorded for review.
 
 ocr of T95.67-B3-D1 (session 3ecfee07): complete, 8 files, no findings. `evidence/D95/ocr/T95.67-B3-D1-77c3c491.json`. T95.67-B3 done. Every critic C2 fix is reviewed clean; full run next, then critic C3 (the third and last at this gate).
+
+Run `t95.67-fixes-2` (browser-full, at `4669d28a`; covers T95.67-B6, T95.67-B6-B1, T95.67-B6-B2, T95.67-B3-D1): unit 268 files, 3295 passed; integration 163 files, 394 passed; browser-1 127 passed (5.7 min), browser-2 79 passed (4.5 min), browser-3 55 passed (3.2 min), browser-4 193 passed, 4 skipped (6.0 min); 14 of 14 checks exit 0; run complete. Passed. Critic C3 next.
