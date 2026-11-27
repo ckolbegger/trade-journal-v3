@@ -218,3 +218,5 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 1. *Recommend:* follow-on T95.67-F1 (tools only): `bench-run.ts` reads the new page (the day card's counts and the owed group's cards) for its due-reflection comparison and Review-open timing, keeping its checks; then one more benchmark run.
 2. Record it as tech debt and tag without a Review-open measurement.
 **Waiting:** the tag waits for the answer (decision 114).
+
+**Answer (2026-11-27):** (2). Recorded as tech debt; D9.5 is tagged without a Review-open measurement. **Status:** answered.

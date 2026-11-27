@@ -115,3 +115,5 @@ Critic C3's minor observations (T95.67):
 - The closed card offers "Write the Close Review" and "Decline…" beside "Not due until the next Review."
 - "Record the sale" and "I sold: record it" outside the expiration block prefill 17:00 (after the close), giving "…due in the Review after next".
 - "Back to BREN" puts focus on the first radio.
+
+- Benchmark (T95.67, the user's answer to Q18, 2026-11-27): `tools/bench-run.ts` (282, 346, 429) still reads the old Review status block and its Blockers list, removed by T95.10, so `bench:run` times out and the Review-open time at scale (AC-PERF-001, A326) is not measured; the capacity steps pass. Fix: read the new page's day card and owed group, then rerun the benchmark.
