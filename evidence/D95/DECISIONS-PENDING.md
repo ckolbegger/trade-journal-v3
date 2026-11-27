@@ -201,3 +201,11 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 2. Leave the fixtures and drop item 5.
 
 **Answer (2026-11-26):** (1). Folded into decision 141 and plan revision 130 (the tag moved to the amended commit; local only). **Status:** answered.
+
+## Q17 (T95.67-B3): what figure does "You lose the $X paid" name when part of the contract was sold? — asked 2026-11-27
+
+**Plain words.** On expiration day, an option expiring worthless reads "XYZ $54.00, below the $55.00 strike: expired worthless. You lose the $101.95 paid." (W141). The approved word row says the figure is the Trade's result. When part of the position was sold earlier at a gain, the Trade's result ($101.95 lost) is not what was paid for the contracts that expire ($190.65), so "paid" misstates it (critic C1, defect 3). T95.67-B3 (`b2484a46`) changed the figure to the expiring contracts' cost: a long reads "You lose the $190.65 paid."; a short now always reads "You keep $X" with what was received for the contracts that expire, where a short whose Trade result was negative read "You lose $X." before. It also changed B95.11's quoted figure in `e2e/d95/expiration.spec.ts` from $101.95 to $190.65.
+1. *Recommend:* keep the fix: W141's figure becomes the expiring contracts' cost (paid, or received for a short); the Trade's result stays on the receipt and the Replay. A word-row figure change, so a decision and plan revision.
+2. Keep the Trade's result and change the words to say so, for example "expired worthless. The Trade loses $101.95." (new words), and revert B3.
+3. Revert B3 and keep W141 as approved; the defect goes to tech debt.
+**Parked:** T95.67-B3 (its ocr waits for the answer). T95.67-B4 and T95.67-B5 go ahead.
