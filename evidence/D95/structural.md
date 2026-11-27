@@ -1613,3 +1613,10 @@ Moderate defects, each a bug task (failing test first):
 - **T95.67-B5** (defect 5, accessibility): focus falls to the page body after "It expired worthless", "Record expiration", "Back to the Review", Cancel on the sale form, the grid's "No price", the walk's last "Next moment", "Save the Close Review" and "Decline the Close Review" (A327, T95.61; WCAG 2.4.3). Case per control: it should leave focus on a named element in place.
 
 Low defects 6, 7, 8 and 9 and the minor observations → `tech-debt.md`.
+
+### T95.67-B1
+
+Commit `61c95ca5`: `replayStripOf` counts a closing sale's fill against the Stop (any side) or against the Target (At, or past it on the Trade's side) as reaching that line on the sale's session date, unless a Mark reached it earlier; the closed card's cells read it (no UI change). Cases 1 and 2 red then green; case 3 first-run pass, flagged, mutation (any Target fill counts) failed, restored. The Replay's own "Stop first breached" words still use Marks only (agent's note). typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser closed-card, sale, close-review 15 passed.
+
+ocr of T95.67-B1 (session 79044970): complete, 2 files, no findings. `evidence/D95/ocr/T95.67-B1-61c95ca5.json`.
+- Main-session decision: the five critic bug tasks run one after another, each with its own ocr; one `browser-task` run covers them all after the last, then the full run before critic C2 (as one run covered T95.28-F2 and T95.45).
