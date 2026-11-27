@@ -1682,3 +1682,7 @@ T95.67 critic C2 (fresh general-purpose, effort medium; report `evidence/D95/cri
 ### T95.67-B6
 
 Commit `301ca1e0`: `ReplayFrame` moves focus to the other step button when a step lands on the first or newest session, so focus stays in the dialog and Escape reaches the overlay (Review card and Trade Detail share it). Cases 1, 2 and 3 red then green; no first-run pass. Replay folder 296 passed; browser replay, replay-strip, replay-day, keyboard-day, close-review 15 passed (none drives the new focus path; the critic re-checks it).
+
+ocr of T95.67-B6 (session 38ca71a5): 2 files, 2 findings, both Valid. `evidence/D95/ocr/T95.67-B6-301ca1e0.json`.
+- **T95.67-B6-B1** (Valid, high, `frame.tsx:42`): with exactly two sessions the other step button is still disabled when `focus()` runs (it is focused before the state update), so focus is lost as before; this is critic C2's own "1 of 2" case. Cases: with two sessions, it should move focus to "Next session" after "Previous session" reaches the first, and to "Previous session" after "Next session" reaches the newest; a browser case on ABC_WALK's Replay (2 sessions) presses "Previous session" then Escape and finds the Replay closed with focus on "Replay".
+- **T95.67-B6-B2** (Valid, medium, test, `frame.test.tsx:159`): the Escape case checks only that `onClose` was called; with no opener and a mocked `onClose` that never unmounts, it cannot fail on a lost focus return. Case: it should return focus to the button that opened the Replay after Escape at an end (overlay unmounted for real).

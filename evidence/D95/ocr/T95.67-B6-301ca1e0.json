@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 58345,
+    "input_tokens": 57747,
+    "output_tokens": 598,
+    "cache_read_tokens": 15872,
+    "elapsed": "31s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/frame.test.tsx",
+      "content": "This verifies the Escape callback but not the focus restoration promised by this test and A327. There is no Replay opener, and the mocked onClose never unmounts the overlay, so its focus-restoration cleanup never runs. Render a harness with an opener that mounts the overlay and an onClose that removes it, then assert the dialog disappears and focus returns to that opener after Escape.",
+      "existing_code": "    expect(onClose).toHaveBeenCalledTimes(1);",
+      "start_line": 159,
+      "end_line": 159,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "With exactly two sessions, the other step button is still disabled when focus() runs: at the newest session Next is disabled, and at the oldest Previous is disabled. The focus call therefore does nothing; move() then disables the clicked button, reproducing the lost-focus/Escape defect. Transfer focus after the state update has enabled the destination button, or use an always-enabled target such as the slider. Add coverage for both directions with two sessions.",
+      "existing_code": "    if (to \u003c= 0 || to \u003e= last) other.current?.focus();",
+      "start_line": 42,
+      "end_line": 42,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx"
+      ]
+    }
+  ],
+  "session_id": "38ca71a5-110e-400a-ac2e-5f449500855b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "38ca71a5-110e-400a-ac2e-5f449500855b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "301ca1e0",
+      "resolved_base": "ef3c44c59a41cacfe18ed4671086069738e6e0f5",
+      "resolved_head": "301ca1e029ec8467fa08d503d61750f6b775c965",
+      "exact_range": "ef3c44c59a41cacfe18ed4671086069738e6e0f5..301ca1e029ec8467fa08d503d61750f6b775c965",
+      "source_artifact_sha256": "e1c205a4b1b3985cf3adee10038a9ccc87c135d30902ad1cdbfb60414c195f91"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "968f440f2954d23bba09e59d065b0b99ceae7263e0f0ce2d1686c61193b026e2"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "c60ad9150a3b0445338262242e5d9f45f25fb337bd82c17d48cb7a518112089c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "968f440f2954d23bba09e59d065b0b99ceae7263e0f0ce2d1686c61193b026e2"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "c60ad9150a3b0445338262242e5d9f45f25fb337bd82c17d48cb7a518112089c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2ecfbf9600f62dbc0ac5ff3ed4a167d0ca97c16cba1a351e02cb202aa131b7cb",
+          "path": "evidence/D95/tdd-log/T95.67-B6.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 31262
+  }
+}
