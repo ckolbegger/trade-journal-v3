@@ -1638,3 +1638,8 @@ Commit `d7a9fca1`: "Sold before the close" prefills the contract's settlement in
 ocr of T95.67-B4 (session a35218b1): 5 files, 1 finding, Valid. `evidence/D95/ocr/T95.67-B4-d7a9fca1.json`.
 - **T95.67-B4-B1** (Valid, medium, `ReviewSettlement.tsx:47`): the UI works out the pre-close time (settlement minus 60 s), against ADR 0001; the Daily Review read should supply it. Cases: it should take the "Sold before the close" time from the Review's data, not compute it in the screen; the prefill stays 15:59 on the expiration day.
 - Reviewer's note (not an ocr finding): when the settlement time is not a value, the form still fills the current time.
+
+### T95.67-B5
+
+Commit `e590c2a4`: focus after "It expired worthless" goes to the form's title; after "Back to the Review" from the form, to its opener; Cancel on the expiration block's sale form, to "Sold it before the close"; the grid's "No price", to that row's "Undo"; the walk's last "Next moment", to the "All N seen. Now write." line inside the dialog (only when focus was lost); "Save the Close Review" and "Decline the Close Review", to the card header. Six cases red then green; "Record expiration" and the receipt's "Back to the Review" first-run passes, flagged, mutation-checked (the critic's BODY reading on the receipt paths not reproduced). One new browser case in `e2e/d95/expiration.spec.ts`. src/ui 1612 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser expiration, settle-later, close-review, keyboard-day, marks-step, d7 review-expiration 24 passed.
+- Agent's note: the same gap remains on Cancel of the grid's "Why no price" row and on Cancel of the sale form inside an ordinary Action panel (not reported by the critic).
