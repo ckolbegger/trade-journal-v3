@@ -1658,3 +1658,6 @@ ocr of T95.67-B4-B1 (session 146beb98): complete, 7 files, no findings. `evidenc
 ### T95.67-B5-B1
 
 Commit `1dd74e13`: the saved Action's "Record the sale" / "Record the buy-back" carries `data-sale-opener`; on Cancel or Back the sale form focuses the idle block's or saved section's opener, else the element focused when it opened (the banner's "I sold: record it"). Cases 1 and 3 red then green; case 2 first-run pass, flagged, mutation-checked. ActionForm, ReviewCard, ReviewExpiration 146 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser sale, action, keyboard-day, expiration 25 passed.
+
+ocr of T95.67-B5-B1 (session b3e783fc): 3 files, 1 finding, **Wrong, dismissed**. `evidence/D95/ocr/T95.67-B5-B1-1dd74e13.json`. The finding (`ActionForm.tsx:157`: with a saved Exit, the banner's "I sold: record it" would return focus to the saved section's button) needs a state the UI cannot reach: `ReviewCard.tsx:345` shows the banner only when `trade.form.kind === 'New'`, when no saved section is rendered (checked against the cited lines by the main session). Listed in the open questions.
+- Reviewer's note: a sale opened by `saleRequest` on a card that opens with the sale form may remember the page body as its opener; the guards keep it safe; not checked in a browser.

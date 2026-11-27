@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 92894,
+    "input_tokens": 92120,
+    "output_tokens": 774,
+    "cache_read_tokens": 13312,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "When the banner's “I sold: record it” opens a sale while the current Action is a saved Exit, both an outside opener and a saved-area sale button exist. This expression always prefers the saved-area button, so Cancel/Back returns focus to “Record the sale” instead of the banner button that opened the form. Track whether the request originated externally and prioritize that connected opener in that case; add a banner-focus test with a saved Exit (the new test only exercises a New Action).",
+      "existing_code": "    const opener = (idleArea.current ?? savedArea.current)?.querySelector\u003cHTMLElement\u003e('[data-sale-opener]') ?? outsideOpener.current;",
+      "start_line": 157,
+      "end_line": 157,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ActionForm.test.tsx",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewCard.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "b3e783fc-3b1d-429f-9a05-52fd8c45de3e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b3e783fc-3b1d-429f-9a05-52fd8c45de3e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1dd74e13",
+      "resolved_base": "75eb04dae46e84f67bbfbc993d8e3e88dae35fed",
+      "resolved_head": "1dd74e131d311b6d7b233ee45d1e939f3523c13a",
+      "exact_range": "75eb04dae46e84f67bbfbc993d8e3e88dae35fed..1dd74e131d311b6d7b233ee45d1e939f3523c13a",
+      "source_artifact_sha256": "34d01ddf9bd2581b93c111e534bfe29d58b923952366b3d3c9e915a09e045405"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e2feb177b3fb1837e3d8612f678dec81c5119001367712587cba9e32736e1905"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "41b322895ac7cca3794ee63892562533c8b683441b058820c940a5dc70301ff4"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "ac8f0cd3b5c4eb2575553fab82a4fe2651b7cd0c1493307b7fbc5f9676cd88a5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e2feb177b3fb1837e3d8612f678dec81c5119001367712587cba9e32736e1905"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "41b322895ac7cca3794ee63892562533c8b683441b058820c940a5dc70301ff4"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "ac8f0cd3b5c4eb2575553fab82a4fe2651b7cd0c1493307b7fbc5f9676cd88a5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0b9dccffcf50552dd84ac5ab79ef161a0e8a36937ab5344c9e111991c423dc03",
+          "path": "evidence/D95/tdd-log/T95.67-B5-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 30087
+  }
+}
