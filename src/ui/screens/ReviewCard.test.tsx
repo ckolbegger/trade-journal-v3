@@ -2197,6 +2197,15 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(within(card).getByText('Back to the Review')).toBeTruthy();
   });
 
+  it('should put focus on I sold: record it after Cancel on a sale opened by it', async () => {
+    const { user, card } = await openExited();
+    const banner = within(card).getByRole('group', { name: 'Exit not carried out' });
+    await user.click(within(banner).getByRole('button', { name: 'I sold: record it' }));
+    await user.click(await within(card).findByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).toBe(within(card).getByRole('group', { name: 'Exit not carried out' }).querySelector('button'));
+    expect(document.activeElement?.textContent).toBe('I sold: record it');
+  });
+
   it('should keep the ordinary sale form default time outside the expiration block', async () => {
     const { user, card } = await openExited();
     await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));

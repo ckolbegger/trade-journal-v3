@@ -353,6 +353,26 @@ describe('The sale form in the card (T95.40)', () => {
   });
 });
 
+describe('Focus after leaving the sale form unrecorded (T95.67-B5-B1, A327)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  async function openFrom(leave: string) {
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z' }, exitFormFacade());
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    await mounted.user.click(await screen.findByRole('button', { name: leave }));
+  }
+
+  it('should return focus to Record the sale after Cancel on a sale form opened from a saved Exit', async () => {
+    await openFrom('Cancel');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Record the sale' }));
+  });
+
+  it('should return focus to Record the sale after Back to the Review on a sale form opened from a saved Exit', async () => {
+    await openFrom('Back to the Review');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Record the sale' }));
+  });
+});
+
 describe('The receipt in the card (T95.40)', () => {
   const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
   const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;

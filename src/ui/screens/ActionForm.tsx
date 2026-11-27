@@ -142,12 +142,20 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
   // Leaving the sale form unrecorded (Cancel, Back to the Review) puts focus on the button that opened it, in the idle block it came from (A327).
+  // A sale opened from a button outside this form (the banner's "I sold: record it") returns to that button while it still exists.
   const idleArea = useRef<HTMLDivElement>(null);
+  const savedArea = useRef<HTMLElement>(null);
   const leftUnrecorded = useRef(false);
+  const outsideOpener = useRef<Element | null>(null);
   useEffect(() => {
-    if (selling || !leftUnrecorded.current) return;
+    if (selling) {
+      outsideOpener.current = document.activeElement;
+      return;
+    }
+    if (!leftUnrecorded.current) return;
     leftUnrecorded.current = false;
-    idleArea.current?.querySelector<HTMLElement>('[data-sale-opener]')?.focus();
+    const opener = (idleArea.current ?? savedArea.current)?.querySelector<HTMLElement>('[data-sale-opener]') ?? outsideOpener.current;
+    if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
   }, [selling]);
   // Whether the sale form holds typed values: the Action draft stays unsaved behind it, so either one holds the Trade.
   const [saleDirty, setSaleDirty] = useState(false);
@@ -382,7 +390,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   );
   if (form.kind === 'Saved' && (readOnlyEmpty || (writable && !changing && !dirty))) {
     return (
-      <section aria-label="Saved Action">
+      <section ref={savedArea} aria-label="Saved Action">
         {savedLines}
         {writable && (
           <button type="button" className="pill secondary" onClick={() => setChanging(true)}>
@@ -390,7 +398,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           </button>
         )}
         {writable && saleWords && (
-          <button type="button" className="pill secondary" onClick={() => setSelling(true)}>
+          <button type="button" className="pill secondary" data-sale-opener onClick={() => setSelling(true)}>
             {saleWords}
           </button>
         )}
