@@ -83,7 +83,8 @@ test.describe('B95.11 The expiration block (AC-SET-003)', () => {
     await button(block, 'Record expiration').click();
     await expect(block.getByRole('heading', { name: 'Expiration recorded' }), 'the receipt heading is focused').toBeFocused();
     await button(block, 'Back to the Review').click();
-    await expect.poll(() => page.evaluate(() => document.activeElement?.tagName), 'focus is not on the page body after the receipt').not.toBe('BODY');
+    await expect(block.getByRole('heading', { name: 'Expiration recorded' }), 'the receipt is gone').toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Review MNO\b/ }), 'MNO still needs Marks and a settlement, so focus is on its header').toBeFocused();
     await context.close();
   });
 
