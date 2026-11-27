@@ -1654,3 +1654,7 @@ Commit `61b4c3e4`: the "Sold before the close" time (`beforeCloseTime`, the sett
 
 ocr of T95.67-B4-B1 (session 146beb98): complete, 7 files, no findings. `evidence/D95/ocr/T95.67-B4-B1-61b4c3e4.json`. T95.67-B4 done.
 - Reviewer's notes (not ocr findings): `beforeTheClose` sits between the comment "A card's panels in work order…" and `cardProgress`, separating them (style); a settlement time that is not a value gives no prefill, untested.
+
+### T95.67-B5-B1
+
+Commit `1dd74e13`: the saved Action's "Record the sale" / "Record the buy-back" carries `data-sale-opener`; on Cancel or Back the sale form focuses the idle block's or saved section's opener, else the element focused when it opened (the banner's "I sold: record it"). Cases 1 and 3 red then green; case 2 first-run pass, flagged, mutation-checked. ActionForm, ReviewCard, ReviewExpiration 146 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser sale, action, keyboard-day, expiration 25 passed.
