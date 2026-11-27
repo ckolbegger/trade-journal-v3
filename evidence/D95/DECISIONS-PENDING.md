@@ -211,3 +211,10 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 **Parked:** T95.67-B3 (its ocr waits for the answer). T95.67-B4 and T95.67-B5 go ahead.
 
 **Answer (2026-11-27):** none of the three; the user's own wording (word-only, decision 122; recorded in `word-decisions.md`): "Your loss on the trade is $X" with nothing sold, "Your net loss (gain) on the trade is $X" after a part sale or buy-back, "You keep $X" for a short with nothing bought back. The figure stays the Trade's result, so T95.67-B3's figure change is undone by follow-on T95.67-B3-D1. **Status:** answered.
+
+## Q18 (T95.67, the benchmark): the benchmark script still looks for the old Review page — asked 2026-11-27
+
+**Plain words.** The benchmark's capacity steps passed every limit. Its last step, `bench:run`, opens the Review and waits for the old "Review status" block with its Blockers list ("Reflection due for …"), which D9.5's redesign removed (T95.10). It timed out after 60 s, so the Review-open time (AC-PERF-001, A326) was not measured. Not a slow app: a script that reads a block that no longer exists (`tools/bench-run.ts` 282, 346, 429).
+1. *Recommend:* follow-on T95.67-F1 (tools only): `bench-run.ts` reads the new page (the day card's counts and the owed group's cards) for its due-reflection comparison and Review-open timing, keeping its checks; then one more benchmark run.
+2. Record it as tech debt and tag without a Review-open measurement.
+**Waiting:** the tag waits for the answer (decision 114).
