@@ -50,10 +50,11 @@ function sideOf(price: Rational, strike: Rational): string {
   return order > 0 ? 'above' : 'below';
 }
 
-// What expiring worthless means to the trader, from the cost of the contracts that expire: a long contract loses what was paid, a short one keeps what was received.
-function kept(cost: Rational): string {
-  const amount = money(unsigned(cost));
-  return cost.compare(ZERO) > 0 ? `You lose the ${amount} paid.` : `You keep ${amount}.`;
+// What expiring worthless means to the trader, from the Trade's result (W141): a Trade with nothing closed before says its loss or what is kept; one with part closed before says its net result.
+function worthlessWords(result: Rational, long: boolean, partClosedBefore: boolean): string {
+  const amount = money(unsigned(result));
+  if (partClosedBefore) return `Your net ${result.compare(ZERO) < 0 ? 'loss' : 'gain'} on the trade is ${amount}.`;
+  return long ? `Your loss on the trade is ${amount}.` : `You keep ${amount}.`;
 }
 
 // The expired contract's block on the card (W136): an expired contract owes no Action, only a word on how it settled.
@@ -137,7 +138,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
       )}
       {finished && !finished.inTheMoney && (
         <p>
-          {underlying} {money(finished.underlyingPrice)}, {sideOf(finished.underlyingPrice, finished.strike)} the {money(finished.strike)} strike: expired worthless. {kept(finished.contractsCost)}
+          {underlying} {money(finished.underlyingPrice)}, {sideOf(finished.underlyingPrice, finished.strike)} the {money(finished.strike)} strike: expired worthless. {worthlessWords(finished.ifExpiredWorthless.dollars, long, finished.partClosedBefore)}
         </p>
       )}
       {!finished && <p>No price for {underlying}, so the app can&apos;t say where it finished. What happened?</p>}

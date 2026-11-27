@@ -1,4 +1,4 @@
-import type { OptionInstrument } from '../domain/instrument/index.ts';
+import { instrumentKey, type OptionInstrument } from '../domain/instrument/index.ts';
 import { expirationPayoff, expirationStanding, type CalculationResult, type DerivedTradeState, type ExpirationPayoffs, type ExpirationStandingFigures, type TradeAnalysisRecord } from '../domain/trade-analysis/index.ts';
 
 // The option Lots the Trade still holds, as the payoff views take them.
@@ -13,7 +13,14 @@ export function payoffOf(analysis: TradeAnalysisRecord, state: DerivedTradeState
   return expirationPayoff({ plan: analysis.plan, exposure: { lots: openOptionLots(state), realizedToDate: state.realizedToDate } });
 }
 
+// Whether the Trade sold or bought back part of this contract before the expiration: some Execution on it disposed of Lots (W141).
+function partClosedBefore(state: DerivedTradeState, contract: OptionInstrument): boolean {
+  const key = instrumentKey(contract);
+  const disposing = new Set(state.facts.filter((fact) => instrumentKey(fact.instrument) === key).map((fact) => fact.factId));
+  return state.lotMatches.some((match) => disposing.has(match.disposingExecutionId));
+}
+
 // Where an expiring contract finished (A314), from the Underlying's Mark for the expiration session as recorded decimal text; absent when it has none.
 export function standingOf(state: DerivedTradeState, contract: OptionInstrument, underlyingMark: string | undefined): CalculationResult<ExpirationStandingFigures> {
-  return expirationStanding({ contract, exposure: { lots: openOptionLots(state), realizedToDate: state.realizedToDate }, oneR: state.baseline.oneR, ...(underlyingMark !== undefined && { underlyingMark }) });
+  return expirationStanding({ contract, exposure: { lots: openOptionLots(state), realizedToDate: state.realizedToDate }, oneR: state.baseline.oneR, partClosedBefore: partClosedBefore(state, contract), ...(underlyingMark !== undefined && { underlyingMark }) });
 }

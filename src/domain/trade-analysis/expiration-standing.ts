@@ -13,6 +13,8 @@ export interface ExpirationStandingInput {
   readonly oneR: Rational;
   // The Underlying's Mark for the expiration session, as recorded decimal text; absent when it has none.
   readonly underlyingMark?: string;
+  // Whether part of the position was sold or bought back before the expiration (a closing change of part of it).
+  readonly partClosedBefore: boolean;
 }
 
 export interface TradeResultAt {
@@ -30,8 +32,8 @@ export interface ExpirationStandingFigures {
   readonly worth: Rational;
   readonly ifSettled: TradeResultAt;
   readonly ifExpiredWorthless: TradeResultAt;
-  // What the held contracts cost with their unconsumed opening fees, signed: positive is paid (long), negative is received (short).
-  readonly contractsCost: Rational;
+  // Whether the Trade closed part of the position before the expiration, so its result is a net one (W141).
+  readonly partClosedBefore: boolean;
 }
 
 export function expirationStanding(input: ExpirationStandingInput): CalculationResult<ExpirationStandingFigures> {
@@ -47,15 +49,11 @@ export function expirationStanding(input: ExpirationStandingInput): CalculationR
     const position = positionOf(lot.instrument, lot.quantity, lot.basis);
     return sum.add(position.contracts.mul(position.multiplier).mul(intrinsic(position, mark.value)));
   }, ZERO);
-  const contractsCost = input.exposure.lots.reduce((sum, lot) => {
-    const position = positionOf(lot.instrument, lot.quantity, lot.basis);
-    return sum.add(position.contracts.mul(position.multiplier).mul(position.basis)).add(lot.unconsumedOpeningFee);
-  }, ZERO);
   const view = currentExpirationView(input.exposure);
   const resultAt = (dollars: Rational): TradeResultAt => ({ dollars, r: dollars.div(input.oneR) });
   const ifSettled = resultAt(expirationValueAt(view, mark.value));
   return {
     kind: 'Value',
-    value: { underlyingPrice: mark.value, strike: strike.value, inTheMoney, amount: inTheMoney ? margin : ZERO.sub(margin), worth, ifSettled, ifExpiredWorthless: resultAt(ifSettled.dollars.sub(worth)), contractsCost },
+    value: { underlyingPrice: mark.value, strike: strike.value, inTheMoney, amount: inTheMoney ? margin : ZERO.sub(margin), worth, ifSettled, ifExpiredWorthless: resultAt(ifSettled.dollars.sub(worth)), partClosedBefore: input.partClosedBefore },
   };
 }

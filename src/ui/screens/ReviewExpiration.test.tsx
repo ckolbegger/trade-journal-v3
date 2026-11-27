@@ -136,7 +136,7 @@ describe('record expiration from the Review (A113, conflict K14)', () => {
     const user = userEvent.setup();
     const facade = exitFormFacade(dueDetail);
     // XYZ finished at $54.00 under its $55.00 call strike: out of the money, so Record expiration is the main button.
-    const outOfTheMoney = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, contractsCost: Rational.of(200n) } } as const;
+    const outOfTheMoney = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, partClosedBefore: false } } as const;
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(duringReview).mockResolvedValueOnce(afterReview);
     vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: DATE, cutoff: CUTOFF, trade: { ...trade, expirationStanding: outOfTheMoney } }).mockResolvedValueOnce({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card: owedCard });
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
@@ -168,7 +168,7 @@ describe('record expiration from the Review (A113, conflict K14)', () => {
 });
 
 // T95.67-B5 (A327, WCAG 2.4.3): after each press in the expiration block, focus is on a named element, never the page body.
-const worthlessStanding = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, contractsCost: Rational.of(200n) } } as const;
+const worthlessStanding = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, partClosedBefore: false } } as const;
 const inTheMoneyStanding = { kind: 'Value', value: { ...worthlessStanding.value, underlyingPrice: Rational.of(57n), inTheMoney: true, amount: Rational.of(2n), worth: Rational.of(200n) } } as const;
 
 async function openCard(standing: typeof worthlessStanding | typeof inTheMoneyStanding) {

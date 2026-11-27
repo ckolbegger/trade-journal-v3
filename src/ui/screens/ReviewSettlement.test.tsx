@@ -164,7 +164,7 @@ describe('the expiration block around its item', () => {
     const card = await screen.findByRole('region', { name: `${underlying} review` });
     return { card, trade };
   };
-  const OUT_OF_THE_MONEY = { kind: 'Value', value: { underlyingPrice: Rational.of(46n), strike: Rational.of(45n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(250n), r: Rational.of(1n) }, ifExpiredWorthless: { dollars: Rational.of(250n), r: Rational.of(1n) }, contractsCost: Rational.of(-250n) } } as const;
+  const OUT_OF_THE_MONEY = { kind: 'Value', value: { underlyingPrice: Rational.of(46n), strike: Rational.of(45n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(250n), r: Rational.of(1n) }, ifExpiredWorthless: { dollars: Rational.of(250n), r: Rational.of(1n) }, partClosedBefore: false } } as const;
 
   it('should offer no Record expiration for an expiration date outside the market calendar, only the choices that need no settlement time', async () => {
     const outside = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: MNO_PUT, date: '2026-11-20' } as const;
@@ -198,7 +198,7 @@ describe('the expiration block around its item', () => {
 const CORV_PUT = { kind: 'Option', symbol: 'CORV', root: 'CORV', expiration: '2026-11-20', right: 'Put', strike: '80', multiplier: 100 } as const;
 const CORV_ITEM = itemOf('t5', CORV_PUT, 3n);
 const dollars = (n: bigint) => Rational.of(n);
-const standing = (over: { mark: bigint; inTheMoney: boolean; amount: bigint; worth: bigint; settled: bigint; settledR: Rational; worthless: bigint; worthlessR: Rational; cost?: bigint }): NonNullable<DailyTradeReview['expirationStanding']> => ({
+const standing = (over: { mark: bigint; inTheMoney: boolean; amount: bigint; worth: bigint; settled: bigint; settledR: Rational; worthless: bigint; worthlessR: Rational; partClosed?: boolean }): NonNullable<DailyTradeReview['expirationStanding']> => ({
   kind: 'Value',
   value: {
     underlyingPrice: dollars(over.mark),
@@ -208,8 +208,7 @@ const standing = (over: { mark: bigint; inTheMoney: boolean; amount: bigint; wor
     worth: dollars(over.worth),
     ifSettled: { dollars: dollars(over.settled), r: over.settledR },
     ifExpiredWorthless: { dollars: dollars(over.worthless), r: over.worthlessR },
-    // Nothing sold before: the contracts' cost is the Trade's loss.
-    contractsCost: dollars(over.cost ?? -over.worthless),
+    partClosedBefore: over.partClosed ?? false,
   },
 });
 // In the money: CORV finished at $73.00, $7.00 under the $80.00 strike; 3 puts are worth $2,100.00.
@@ -602,33 +601,53 @@ describe('the expiration block on the card (T95.52)', () => {
   });
 
   it('should make Record expiration the main button out of the money, saying what is kept or lost', async () => {
-    // A long put that finished above its strike: the premium paid is lost.
+    // A long put that finished above its strike, nothing sold before: the Trade's loss.
     const lost = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: -633n, settledR: Rational.of(-199n, 100n), worthless: -633n, worthlessR: Rational.of(-199n, 100n) });
     const long = await openBlock({ expirationStanding: lost });
-    expect(within(long.card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. You lose the $633.00 paid.')).toBeTruthy();
+    expect(within(long.card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. Your loss on the trade is $633.00.')).toBeTruthy();
     expect(within(long.card).getByRole('button', { name: 'Record expiration' }).className).toContain('primary');
     expect(within(long.card).getByRole('button', { name: 'Sold it before the close' }).className).not.toContain('primary');
     expect(within(long.card).queryByRole('button', { name: 'It expired worthless' })).toBeNull();
     expect(within(long.card).queryByRole('button', { name: 'Exercised: record later' })).toBeNull();
     cleanup();
 
-    // A short put: the premium received is kept.
+    // A short put, nothing bought back before: the premium received is kept.
     const kept = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: 564n, settledR: Rational.of(94n, 100n), worthless: 564n, worthlessR: Rational.of(94n, 100n) });
     const short = await openBlock({ expirationStanding: kept }, { item: itemOf('t5', CORV_PUT, -3n) });
     expect(within(short.card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. You keep $564.00.')).toBeTruthy();
     expect(within(short.card).getByRole('button', { name: 'Bought it back before the close' })).toBeTruthy();
   });
 
-  it('should name the cost of the contracts that expire, not the Trade result, when part of the position was sold before', async () => {
-    // 1 of 2 puts sold earlier at a gain: the Trade's result is -$102.00, the open put cost $191.00.
-    const partSold = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: -102n, settledR: Rational.of(-1n, 4n), worthless: -102n, worthlessR: Rational.of(-1n, 4n), cost: 191n });
-    const { card } = await openBlock({ expirationStanding: partSold });
-    expect(within(card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. You lose the $191.00 paid.')).toBeTruthy();
+  // The Trade's result of an expiration recorded as worthless, with part of the position closed before.
+  const afterPartClose = (result: Rational) => {
+    const base = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: 0n, settledR: Rational.of(0n), worthless: 0n, worthlessR: Rational.of(0n), partClosed: true });
+    if (base.kind !== 'Value') throw new Error('a Value');
+    return { kind: 'Value', value: { ...base.value, ifSettled: { dollars: result, r: Rational.of(0n) }, ifExpiredWorthless: { dollars: result, r: Rational.of(0n) } } } as const;
+  };
+
+  it('should say Your net loss on the trade after a part sale with a loss overall', async () => {
+    // R-O-C: 1 of 2 calls sold earlier at +88.70; the Trade's result is -$101.95.
+    const { card } = await openBlock({ expirationStanding: afterPartClose(Rational.of(-10195n, 100n)) });
+    expect(within(card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. Your net loss on the trade is $101.95.')).toBeTruthy();
   });
 
-  it('should keep naming what was received for the short contracts that expire, with a part buy-back', async () => {
-    const partBought = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: 190n, settledR: Rational.of(1n, 2n), worthless: 190n, worthlessR: Rational.of(1n, 2n), cost: -240n });
-    const { card } = await openBlock({ expirationStanding: partBought }, { item: itemOf('t5', CORV_PUT, -2n) });
+  it('should say Your net gain on the trade after a part sale with a gain overall', async () => {
+    const { card } = await openBlock({ expirationStanding: afterPartClose(Rational.of(4250n, 100n)) });
+    expect(within(card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. Your net gain on the trade is $42.50.')).toBeTruthy();
+  });
+
+  it('should say You keep for a short contract with nothing bought back', async () => {
+    const kept = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: 240n, settledR: Rational.of(1n, 2n), worthless: 240n, worthlessR: Rational.of(1n, 2n) });
+    const { card } = await openBlock({ expirationStanding: kept }, { item: itemOf('t5', CORV_PUT, -2n) });
     expect(within(card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. You keep $240.00.')).toBeTruthy();
+  });
+
+  it('should say Your net gain or net loss on the trade for a short contract after a part buy-back', async () => {
+    const short = { item: itemOf('t5', CORV_PUT, -2n) };
+    const gain = await openBlock({ expirationStanding: afterPartClose(Rational.of(19000n, 100n)) }, short);
+    expect(within(gain.card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. Your net gain on the trade is $190.00.')).toBeTruthy();
+    cleanup();
+    const loss = await openBlock({ expirationStanding: afterPartClose(Rational.of(-6000n, 100n)) }, short);
+    expect(within(loss.card).getByText('CORV $81.00, above the $80.00 strike: expired worthless. Your net loss on the trade is $60.00.')).toBeTruthy();
   });
 });
